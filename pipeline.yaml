@@ -21,8 +21,6 @@ spec:
     - name: mas-channel
       type: string
       default: "9.1.x"
-    - name: ibm-entitlement-key
-      type: string
     - name: uds-email
       type: string
       default: "john@email.com"

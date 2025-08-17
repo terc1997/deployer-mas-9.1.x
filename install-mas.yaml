@@ -206,31 +206,37 @@ spec:
         CMD+=" --dro-namespace $(params.dro-namespace)"
         CMD+=" --mongodb-namespace $(params.mongodb-namespace)"
 
-        if [[ "$(params.enable-iot)" == "true" ]];
+        ENABLE_IOT="$(params.enable-iot)"
+        if [[ "$ENABLE_IOT" == "true" ]]; then
           CMD+=" --iot-channel $(params.iot-channel)"
         fi
 
-        if [[ "$(params.enable-monitor)" == "true" ]];
+        ENABLE_MONITOR="$(params.enable-monitor)"
+        if [[ "$ENABLE_MONITOR" == "true" ]]; then
           CMD+=" --monitor-channel $(params.monitor-channel)"
         fi
 
-        if [[ "$(params.enable-mref)" == "true" ]];
+        ENABLE_MREF="$(params.enable-mref)"
+        if [[ "$ENABLE_MREF" == "true" ]]; then
           CMD+=" --optimizer-mref $(params.mref-channel)"
         fi
 
         # Optional: Manage and DB2
-        if [[ "$(params.enable-manage)" == "true" ]]; then
+        ENABLE_MANAGE="$(params.enable-manage)"
+        if [[ "$ENABLE_MANAGE" == "true" ]]; then
           CMD+=" --manage-channel $(params.manage-channel)"          
           CMD+=" --manage-jdbc $(params.manage-jdbc)"
           CMD+=" --manage-components $(params.manage-components)"
           CMD+=" --manage-server-bundle-size $(params.manage-server-bundle-size)"
           CMD+=" --manage-persistent-volumes"
 
-          if [[ $(params.enable-manage-demo-data)" == "true" ]]; then
+          ENABLE_DEMO_DATA="$(params.enable-manage-demo-data)"
+          if [[ "$ENABLE_DEMO_DATA" == "true" ]]; then
             CMD+=" --manage-demodata"
           fi
 
-          if [[ "$(params.enable-optimizer)" == "true" ]];
+          ENABLE_OPTIMIZER="$(params.enable-optimizer)"
+          if [[ "$ENABLE_OPTIMIZER" == "true" ]]; then
             CMD+=" --optimizer-channel $(params.optimizer-channel)"
             CMD+=" --optimizer-plan $(params.optimizer-plan)"
           fi
@@ -256,7 +262,8 @@ spec:
         fi
 
         # Optional: Kafka
-        if [[ "$(params.enable-kafka)" == "true" ]]; then
+        ENABLE_KAFKA="$(params.enable-kafka)"
+        if [[ "$ENABLE_KAFKA" == "true" ]]; then
           CMD+=" --kafka-provider $(params.kafka-provider)"
           CMD+=" --kafka-namespace $(params.kafka-namespace)"
           CMD+=" --kafka-version $(params.kafka-version)"

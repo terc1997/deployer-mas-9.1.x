@@ -1,0 +1,274 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: install-mas
+spec:
+  workspaces:
+    - name: ws
+  params:
+    - name: mas-catalog-version
+      type: string
+      default: "v9-250731-amd64"
+    - name: mas-channel
+      type: string
+      default: "9.1.x"
+
+    - name: mas-instance-id
+      type: string
+      default: "mas1"
+    - name: mas-workspace-id
+      type: string
+      default: "ws1"
+    - name: mas-workspace-name
+      type: string
+      default: "workspace"
+
+    - name: ibm-entitlement-key
+      type: string
+      default: ""
+
+    - name: license-file
+      type: string
+      default: "license.dat"
+
+    - name: uds-email
+      type: string
+      default: "john@email.com"
+    - name: uds-firstname
+      type: string
+      default: "john"
+    - name: uds-lastname
+      type: string
+      default: "barney"
+
+    - name: storage-rwo
+      type: string
+      default: "ocs-external-storagecluster-ceph-rbd"
+    - name: storage-rwx
+      type: string
+      default: "ocs-external-storagecluster-cephfs"
+    - name: storage-pipeline
+      type: string
+      default: "ocs-external-storagecluster-cephfs"
+    - name: storage-accessmode
+      type: string
+      default: "ReadWriteMany"
+
+    - name: dro-namespace
+      type: string
+      default: "redhat-marketplace"
+
+    - name: mongodb-namespace
+      type: string
+      default: "mongoce"
+
+    - name: enable-iot
+      type: string
+      default: "false"
+    - name: iot-channel
+      type: string
+      default: "9.1.x"
+
+    - name: enable-monitor
+      type: string
+      default: "false"
+    - name: monitor-channel
+      type: string
+      default: "9.1.x"
+
+    - name: enable-optimizer
+      type: string
+      default: "false"
+    - name: optimizer-channel
+      type: string
+      default: "9.1.x"
+    - name: optimizer-plan
+      type: string
+      default: "full"
+
+    - name: enable-predict
+      type: string
+      default: "false"
+    - name: predict-channel
+      type: string
+      default: "9.1.x"
+
+    - name: enable-mref
+      type: string
+      default: "false"
+    - name: mref-channel
+      type: string
+      default: "9.1.x"
+
+    - name: enable-manage
+      type: string
+      default: "false"
+    - name: manage-channel
+      type: string
+      default: "9.1.x"
+
+    - name: enable-manage-demo-data
+      type: string
+      default: "false"
+
+    - name: manage-jdbc
+      type: string
+      default: "workspace-application"
+    - name: manage-components
+      type: string
+      default: "base=latest,health=latest,spatial=latest,strategize=latest,serviceprovider=latest,utilities=latest,hse=latest,aip=latest"
+    - name: manage-server-bundle-size
+      type: string
+      default: "jms"
+    - name: manage-base-language
+      type: string
+      default: "EN"
+    - name: manage-server-timezone
+      type: string
+      default: "GMT"
+
+    - name: db2-channel
+      type: string
+      default: "v110509.0"
+    - name: db2-namespace
+      type: string
+      default: "db2u"
+    - name: db2-type
+      type: string
+      default: "db2wh"
+    - name: db2-timezone
+      type: string
+      default: "GMT"
+    - name: db2-cpu-requests
+      type: string
+      default: "4000m"
+    - name: db2-cpu-limits
+      type: string
+      default: "6000m"
+    - name: db2-memory-requests
+      type: string
+      default: "8Gi"
+    - name: db2-memory-limits
+      type: string
+      default: "12Gi"
+    - name: db2-backup-storage
+      type: string
+      default: "100Gi"
+    - name: db2-data-storage
+      type: string
+      default: "100Gi"
+    - name: db2-logs-storage
+      type: string
+      default: "100Gi"
+    - name: db2-meta-storage
+      type: string
+      default: "20Gi"
+    - name: db2-temp-storage
+      type: string
+      default: "100Gi"
+
+    - name: enable-kafka
+      type: string
+      default: "true"
+    - name: kafka-provider
+      type: string
+      default: "strimzi"
+    - name: kafka-namespace
+      type: string
+      default: "strimzi"
+    - name: kafka-version
+      type: string
+      default: "3.9.0"
+  steps:
+    - name: install
+      image: quay.io/ibmmas/cli:15.1.6-pre.issue-1155
+      script: |
+        #!/bin/bash
+
+        CMD="mas install"
+
+        # Core always-included parameters
+        CMD+=" --mas-catalog-version $(params.mas-catalog-version)"
+        CMD+=" --ibm-entitlement-key $(params.ibm-entitlement-key)"
+        CMD+=" --mas-channel $(params.mas-channel)"
+        CMD+=" --mas-instance-id $(params.mas-instance-id)"
+        CMD+=" --mas-workspace-id $(params.mas-workspace-id)"
+        CMD+=" --mas-workspace-name \"$(params.mas-workspace-name)\""
+        CMD+=" --disable-walkme"
+        CMD+=" --storage-class-rwo \"$(params.storage-rwo)\""
+        CMD+=" --storage-class-rwx \"$(params.storage-rwx)\""
+        CMD+=" --storage-pipeline \"$(params.storage-pipeline)\""
+        CMD+=" --storage-accessmode \"$(params.storage-accessmode)\""
+        CMD+=" --license-file \"$(params.license-file)\""
+        CMD+=" --uds-email \"$(params.uds-email)\""
+        CMD+=" --uds-firstname \"$(params.uds-firstname)\""
+        CMD+=" --uds-lastname \"$(params.uds-lastname)\""
+        CMD+=" --dro-namespace $(params.dro-namespace)"
+        CMD+=" --mongodb-namespace $(params.mongodb-namespace)"
+
+        if [[ "$(params.enable-iot)" == "true" ]];
+          CMD+=" --iot-channel $(params.iot-channel)"
+        fi
+
+        if [[ "$(params.enable-monitor)" == "true" ]];
+          CMD+=" --monitor-channel $(params.monitor-channel)"
+        fi
+
+        if [[ "$(params.enable-mref)" == "true" ]];
+          CMD+=" --optimizer-mref $(params.mref-channel)"
+        fi
+
+        # Optional: Manage and DB2
+        if [[ "$(params.enable-manage)" == "true" ]]; then
+          CMD+=" --manage-channel $(params.manage-channel)"          
+          CMD+=" --manage-jdbc $(params.manage-jdbc)"
+          CMD+=" --manage-components $(params.manage-components)"
+          CMD+=" --manage-server-bundle-size $(params.manage-server-bundle-size)"
+          CMD+=" --manage-persistent-volumes"
+
+          if [[ $(params.enable-manage-demo-data)" == "true" ]]; then
+            CMD+=" --manage-demodata"
+          fi
+
+          if [[ "$(params.enable-optimizer)" == "true" ]];
+            CMD+=" --optimizer-channel $(params.optimizer-channel)"
+            CMD+=" --optimizer-plan $(params.optimizer-plan)"
+          fi
+
+          CMD+=" --manage-base-language $(params.manage-base-language)"
+          CMD+=" --manage-server-timezone $(params.manage-server-timezone)"
+
+          CMD+=" --db2-system"
+          CMD+=" --db2-manage"
+          CMD+=" --db2-channel $(params.db2-channel)"
+          CMD+=" --db2-namespace $(params.db2-namespace)"
+          CMD+=" --db2-type $(params.db2-type)"
+          CMD+=" --db2-timezone $(params.db2-timezone)"
+          CMD+=" --db2-cpu-requests $(params.db2-cpu-requests)"
+          CMD+=" --db2-cpu-limits $(params.db2-cpu-limits)"
+          CMD+=" --db2-memory-requests $(params.db2-memory-requests)"
+          CMD+=" --db2-memory-limits $(params.db2-memory-limits)"
+          CMD+=" --db2-backup-storage $(params.db2-backup-storage)"
+          CMD+=" --db2-data-storage $(params.db2-data-storage)"
+          CMD+=" --db2-logs-storage $(params.db2-logs-storage)"
+          CMD+=" --db2-meta-storage $(params.db2-meta-storage)"
+          CMD+=" --db2-temp-storage $(params.db2-temp-storage)"
+        fi
+
+        # Optional: Kafka
+        if [[ "$(params.enable-kafka)" == "true" ]]; then
+          CMD+=" --kafka-provider $(params.kafka-provider)"
+          CMD+=" --kafka-namespace $(params.kafka-namespace)"
+          CMD+=" --kafka-version $(params.kafka-version)"
+        fi
+
+        # Final flags
+        CMD+=" --accept-license"
+        CMD+=" --no-confirm"
+        CMD+=" --skip-pre-check"
+
+        # Output for debugging
+        echo "Final MAS install command:"
+        echo "$CMD"
+
+        eval "$CMD"

@@ -1,0 +1,38 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: get-maximo-license
+spec:
+  workspaces:
+    - name: ws
+  params:
+    - name: KEY_ID
+      type: string
+      default: 2d52b201-117a-35ea-71f0-9781a93fbed4
+    - name: SECRETS_MANAGER_ENDPOINT_URL
+      type: string
+      default: https://afa20521-cd75-4864-843f-e59fd0ffd49d.us-south.secrets-manager.appdomain.cloud
+    - name: LICENSE_FILE_SECRET_NAME
+      type: string
+      default: false
+  steps:
+    - name: write-maximo-license
+      image: quay.io/openshift/origin-cli:4.16
+      script: |
+        #!/usr/bin/env bash
+
+        if [[ $(params.LICENSE_FILE_SECRET_NAME) == "false" ]]; then
+          # Retrieve the IBM Cloud API Key configured in a `deployer` cluster
+          export IBMCLOUD_API_KEY=$(oc get secret ibm-secret -n kube-system -o jsonpath='{.data.apiKey}' | base64 -d)
+          export AUTH_RESPONSE_JSON=$(curl -s -X POST \
+            "https://iam.cloud.ibm.com/identity/token" \
+            --header 'Content-Type: application/x-www-form-urlencoded' \
+            --header 'Accept: application/json' \
+            --data-urlencode 'grant_type=urn:ibm:params:oauth:grant-type:apikey' \
+            --data-urlencode "apikey=${IBMCLOUD_API_KEY}")
+          export ACCESS_TOKEN=$(echo $AUTH_RESPONSE_JSON | grep -o '"access_token":"[^"]*' | grep -o '[^"]*$')
+          export SECRET_JSON=$(curl -s -X GET --location --header "Authorization: Bearer ${ACCESS_TOKEN}" --header "Accept: application/json" "$(params.SECRETS_MANAGER_ENDPOINT_URL)/api/v2/secrets/$(params.KEY_ID)")
+          echo $SECRET_JSON |  grep -o '"payload":"[^"]*' | grep -o '[^"]*$' | base64 -d > $(workspaces.ws.path)/license.dat        
+        else
+          oc get secret $(params.LICENSE_FILE_SECRET_NAME) -n default -o jsonpath='{.data.licensefile}' | base64 -d | base64 -d > $(workspaces.ws.path)/license.dat
+        fi

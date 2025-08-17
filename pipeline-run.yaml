@@ -1,80 +1,42 @@
 apiVersion: tekton.dev/v1
 kind: PipelineRun
 metadata:
-  generateName: pr-mas-deploy-
+  generateName: install-maximo-app-suite-9-1-x-run-
   namespace: default
 spec:
   pipelineRef:
-    name: mas-devops-deploy
+    name: install-maximo-app-suite-9.1.x
   params:
-    - name: uds-email
-      value: "dev-techzone@ibm.com"
-    - name: uds-firstname
-      value: "TechZone"
-    - name: uds-lastname
-      value: "Developer"
-    - name: use-letsencrypt-certs
-      value: "true"
-    - name: tlscert-secret
-      value: "user-serving-cert-000"
-    - name: tlscert-namespace
-      value: "openshift-kube-apiserver"
+    - name: mas-catalog-version
+      value: v9-250731-amd64
+    - name: mas-instance-id
+      value: mas1
+    - name: mas-workspace-id
+      value: ws1
+    - name: mas-workspace-name
+      value: "My Workspace"
+    - name: superuser-username
+      value: admin
+    - name: superuser-password
+      value: Passw0rd
+    - name: mas-channel
+      value: 9.1.x
     - name: ibm-entitlement-key
-      value: "false"
-    - name: license-file-secret-name
-      value: "false"
-    - name: rwx-storageclass
+      value: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJJQk0gTWFya2V0cGxhY2UiLCJpYXQiOjE3NDY2MzA1NjksImp0aSI6ImIxMTNiMTcyYjgzZjRhODE4NzVkMTNjNTU4OWQ2Nzg2In0.nR5QIgyPBgHB7-fAxge2-3temhgQPlpJx93CQfeykZU
+    - name: uds-email
+      value: myemail@email.com
+    - name: uds-firstname
+      value: John
+    - name: uds-lastname
+      value: Barnes
+    - name: storage-rwo
+      value: ocs-storagecluster-ceph-rbd
+    - name: storage-rwx
       value: ocs-storagecluster-cephfs
-    - name: rwo-storageclass
+    - name: storage-pipeline
       value: ocs-storagecluster-cephfs
-    - name: mas-install-core
-      value: "true"
-    - name: mas-install-manage
-      value: "true"
-    - name: mas-install-demo-data
-      value: "true"
-    - name: mas-cp4d-install-cognos
-      value: "false"
-    - name: mas-install-optimizer
-      value: "false"
-    - name: mas-install-visualinspection
-      value: "false"
-    - name: mas-install-iot
-      value: "false"
-    - name: mas-install-monitor
-      value: "false"
-    - name: mas-install-predict
-      value: "false"
-    - name: mas-install-mref
-      value: "false"
-    - name: cpd-platform-components
-      value: "false"
-    - name: cpd-install-spss
-      value: "false"
-    - name: cpd-wsl-projectname
-      value: "maspredictproject"
-    - name: cpd-wml-url
-      value: "xxx"
-    - name: cpd-admin-url
-      value: "xxx"
-    - name: cpd-admin-username
-      value: "admin"
-    - name: cpd-admin-password
-      value: "xxx"
-    - name: mas-install-aibroker
-      value: "false"
-    - name: artifactory_username
-      value: "xxx"
-    - name: artifactory_token
-      value: "xxx"
-    - name: mas_airbroker_watsonxai_apikey
-      value: "xxx"
-    - name: mas_airbroker_watsonxai_url
-      value: "https://us-south.ml.cloud.ibm.com"
-    - name: mas_airbroker_watsonxai_project_id
-      value: "xxx"
-    - name: mas_aibroker_channel
-      value: "9.1.x"
+    - name: storage-accessmode
+      value: ReadWriteMany
   workspaces:
     - name: ws
       volumeClaimTemplate:
@@ -84,14 +46,3 @@ spec:
           resources:
             requests:
               storage: 1Gi
-    - name: manage-ws
-      volumeClaimTemplate:
-        spec:
-          accessModes:
-            - ReadWriteMany
-          resources:
-            requests:
-              storage: 1Gi
-  timeouts:
-    pipeline: "0"
-    tasks: "24h"

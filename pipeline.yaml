@@ -18,10 +18,6 @@ spec:
     - name: mas-workspace-name
       type: string
       default: "workspace"
-    - name: superuser-username
-      type: string
-    - name: superuser-password
-      type: string
     - name: mas-channel
       type: string
       default: "9.1.x"

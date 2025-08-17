@@ -1,0 +1,31 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  name: install-maximo-app-suite-enabled
+spec:
+  pipelineRef:
+    name: install-maximo-app-suite-9.1.x
+  params:
+    - name: enable-manage
+      value: "true"
+    - name: enable-manage-demo-data
+      value: "true"
+    - name: enable-optimizer
+      value: "true"
+    - name: enable-monitor
+      value: "true"
+    - name: enable-iot
+      value: "true"
+    - name: manage-components
+      value: "base=latest,health=latest,spatial=latest,strategize=latest,serviceprovider=latest,utilities=latest,hse=latest,aip=latest"
+  workspaces:
+    - name: ws
+      volumeClaimTemplate:
+        metadata:
+          name: mas-install-workspace
+        spec:
+          accessModes:
+            - ReadWriteMany
+          resources:
+            requests:
+              storage: 1Gi

@@ -35,5 +35,5 @@ spec:
         --type=merge \
         -p '{"spec":{"managementState":"Managed","storage":{"pvc":{"claim":"image-registry-storage"}}}}'
 
-        oc -n openshift-image-registry patch configs.imageregistry.operator.openshift.io/cluster 
+        oc -n openshift-image-registry patch configs.imageregistry.operator.openshift.io/cluster \
          --patch '{"spec":{"defaultRoute":true}}' --type=merge

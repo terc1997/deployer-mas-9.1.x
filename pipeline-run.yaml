@@ -1,45 +1,15 @@
 apiVersion: tekton.dev/v1
 kind: PipelineRun
 metadata:
-  generateName: install-maximo-app-suite-9-1-x-run-
-  namespace: default
+  name: install-maximo-app-suite-defaults
 spec:
   pipelineRef:
     name: install-maximo-app-suite-9.1.x
-  params:
-    - name: mas-catalog-version
-      value: v9-250731-amd64
-    - name: mas-instance-id
-      value: mas1
-    - name: mas-workspace-id
-      value: ws1
-    - name: mas-workspace-name
-      value: "My Workspace"
-    - name: superuser-username
-      value: admin
-    - name: superuser-password
-      value: Passw0rd
-    - name: mas-channel
-      value: 9.1.x
-    - name: ibm-entitlement-key
-      value: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJJQk0gTWFya2V0cGxhY2UiLCJpYXQiOjE3NDY2MzA1NjksImp0aSI6ImIxMTNiMTcyYjgzZjRhODE4NzVkMTNjNTU4OWQ2Nzg2In0.nR5QIgyPBgHB7-fAxge2-3temhgQPlpJx93CQfeykZU
-    - name: uds-email
-      value: myemail@email.com
-    - name: uds-firstname
-      value: John
-    - name: uds-lastname
-      value: Barnes
-    - name: storage-rwo
-      value: ocs-storagecluster-ceph-rbd
-    - name: storage-rwx
-      value: ocs-storagecluster-cephfs
-    - name: storage-pipeline
-      value: ocs-storagecluster-cephfs
-    - name: storage-accessmode
-      value: ReadWriteMany
   workspaces:
     - name: ws
       volumeClaimTemplate:
+        metadata:
+          name: mas-pvc
         spec:
           accessModes:
             - ReadWriteMany

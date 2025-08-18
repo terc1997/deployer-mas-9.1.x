@@ -13,27 +13,29 @@ spec:
       script: |
         #!/usr/bin/env bash
 
-        oc create -f <(echo '{
-           "apiVersion": "v1",
-           "kind": "PersistentVolumeClaim",
-           "metadata": {
-             "name": "image-registry-storage",
-             "namespace": "openshift-image-registry"
-           },
-           "spec": {
-             "storageClassName": "$(params.registry-storageclass)",
-             "accessModes": [ "ReadWriteMany" ],
-             "resources": {
-               "requests": { "storage": "500Gi"
-             }
-           }
-         }
-        }');
+        oc apply -f - <<EOF
+        {
+          "apiVersion": "v1",
+          "kind": "PersistentVolumeClaim",
+          "metadata": {
+            "name": "image-registry-storage",
+            "namespace": "openshift-image-registry"
+          },
+          "spec": {
+            "storageClassName": "$(params.registry-storageclass)",
+            "accessModes": [ "ReadWriteMany" ],
+            "resources": {
+              "requests": {
+                "storage": "500Gi"
+              }
+            }
+          }
+        }
+        EOF
 
         oc patch configs.imageregistry.operator.openshift.io cluster \
-        -n openshift-image-registry \
-        --type=merge \
-        -p '{"spec":{"managementState":"Managed","storage":{"pvc":{"claim":"image-registry-storage"}}}}'
+         --type=merge \
+         -p '{"spec":{"managementState":"Managed","storage":{"managementState":"Managed","pvc":{"claim":"image-registry-storage"}}}}'
 
         oc -n openshift-image-registry patch configs.imageregistry.operator.openshift.io/cluster \
          --patch '{"spec":{"defaultRoute":true}}' --type=merge

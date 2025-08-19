@@ -62,70 +62,82 @@ spec:
       type: string
       default: "mongoce"
 
-    - name: enable-iot
-      type: string
-      default: "false"
     - name: iot-channel
       type: string
-      default: "9.1.x"
-
-    - name: enable-monitor
+      default: ""
+    
+    - name: kafka-provider
       type: string
-      default: "false"
+      default: "strimzi"
+    - name: ibmcloud-apikey
+      type: string
+      default: ""
+    - name: eventstreams-name
+      type: string
+      default: ""
+    - name: eventstreams-resourcegroups
+      type: string
+      default: ""
+    - name: eventstreams-location
+      type: string
+      default: ""
+
     - name: monitor-channel
       type: string
-      default: "9.1.x"
+      default: ""
 
-    - name: enable-optimizer
-      type: string
-      default: "false"
     - name: optimizer-channel
       type: string
-      default: "9.1.x"
+      default: ""
     - name: optimizer-plan
       type: string
       default: "full"
 
-    - name: enable-predict
-      type: string
-      default: "false"
     - name: predict-channel
       type: string
-      default: "9.1.x"
-
-    - name: enable-mref
+      default: ""
+    - name: cp4d-version
       type: string
-      default: "false"
+      default: "5.1.3"
+
     - name: mref-channel
       type: string
-      default: "9.1.x"
-
-    - name: enable-manage
+      default: ""
+    - name: facilities-size
       type: string
-      default: "false"
+      default: "small"
+
+    - name: assist-channel
+      type: string
+      default: ""
+
     - name: manage-channel
       type: string
-      default: "9.1.x"
-
-    - name: enable-manage-demo-data
-      type: string
-      default: "false"
-
+      default: ""
     - name: manage-jdbc
       type: string
       default: "workspace-application"
     - name: manage-components
       type: string
       default: "base=latest,health=latest,spatial=latest,strategize=latest,serviceprovider=latest,utilities=latest,hse=latest,aip=latest"
-    - name: manage-server-bundle-size
+    - name: enable-manage-demo-data
       type: string
-      default: "jms"
+      default: "false"
     - name: manage-base-language
       type: string
       default: "EN"
     - name: manage-server-timezone
       type: string
       default: "GMT"
+    - name: manage-jms
+      type: string
+      default: ""
+    - name: manage-persistent-volumes
+      type: string
+      default: ""
+    - name: manage-server-bundle-size
+      type: string
+      default: ""
 
     - name: db2-channel
       type: string
@@ -153,32 +165,19 @@ spec:
       default: "12Gi"
     - name: db2-backup-storage
       type: string
-      default: "100Gi"
+      default: "200Gi"
     - name: db2-data-storage
       type: string
-      default: "100Gi"
+      default: "500Gi"
     - name: db2-logs-storage
       type: string
       default: "100Gi"
     - name: db2-meta-storage
       type: string
-      default: "20Gi"
+      default: "100Gi"
     - name: db2-temp-storage
       type: string
-      default: "100Gi"
-
-    - name: enable-kafka
-      type: string
-      default: "true"
-    - name: kafka-provider
-      type: string
-      default: "strimzi"
-    - name: kafka-namespace
-      type: string
-      default: "strimzi"
-    - name: kafka-version
-      type: string
-      default: "3.9.0"
+      default: "150Gi"
   steps:
     - name: install
       image: quay.io/ibmmas/cli:15.1.6-pre.issue-1155
@@ -189,85 +188,117 @@ spec:
 
         # Core always-included parameters
         CMD+=" --mas-catalog-version $(params.mas-catalog-version)"
-        CMD+=" --ibm-entitlement-key $(params.ibm-entitlement-key)"
         CMD+=" --mas-channel $(params.mas-channel)"
         CMD+=" --mas-instance-id $(params.mas-instance-id)"
         CMD+=" --mas-workspace-id $(params.mas-workspace-id)"
         CMD+=" --mas-workspace-name \"$(params.mas-workspace-name)\""
+        CMD+=" --ibm-entitlement-key $(params.ibm-entitlement-key)"
+        CMD+=" --license-file \"$(params.license-file)\""
+        CMD+=" --uds-email \"$(params.uds-email)\""
+        CMD+=" --uds-firstname \"$(params.uds-firstname)\""
+        CMD+=" --uds-lastname \"$(params.uds-lastname)\""
         CMD+=" --disable-walkme"
         CMD+=" --storage-class-rwo \"$(params.storage-rwo)\""
         CMD+=" --storage-class-rwx \"$(params.storage-rwx)\""
         CMD+=" --storage-pipeline \"$(params.storage-pipeline)\""
         CMD+=" --storage-accessmode \"$(params.storage-accessmode)\""
-        CMD+=" --license-file \"$(params.license-file)\""
-        CMD+=" --uds-email \"$(params.uds-email)\""
-        CMD+=" --uds-firstname \"$(params.uds-firstname)\""
-        CMD+=" --uds-lastname \"$(params.uds-lastname)\""
         CMD+=" --dro-namespace $(params.dro-namespace)"
         CMD+=" --mongodb-namespace $(params.mongodb-namespace)"
 
-        ENABLE_IOT="$(params.enable-iot)"
-        if [[ "$ENABLE_IOT" == "true" ]]; then
-          CMD+=" --iot-channel $(params.iot-channel)"
+        # Dep: Db2, Kafka
+        MAS_APP_CHANNEL_IOT="$(params.iot-channel)"
+        if [[ "$MAS_APP_CHANNEL_IOT" != "" ]]; then
+          CMD+=" --iot-channel $MAS_APP_CHANNEL_IOT"
+          KAFKA_PROVIDER=$(params.kafka-provider)
+          KAFKA_FLAGS=""
+          if [[ "$KAFKA_PROVIDER" == "ibm" ]]; then
+            KAFKA_FLAGS+=" --kafka-provider $KAFKA_PROVIDER --ibmcloud-apikey $(params.ibmcloud-apikey)"
+            KAFKA_FLAGS+=" --eventstreams-resource-group $(params.eventstreams-resourcegroups) --eventstreams-instance-name $(params.eventstreams-name)"
+            KAFKA_FLAGS+=" --eventstreams-instance-location ${params.eventstreams-location}"
+          else
+            KAFKA_FLAGS+=" --kafka-provider $KAFKA_PROVIDER"
+          fi
+          CMD+="$KAFKA_FLAGS --db2-system"
         fi
 
-        ENABLE_MONITOR="$(params.enable-monitor)"
-        if [[ "$ENABLE_MONITOR" == "true" ]]; then
-          CMD+=" --monitor-channel $(params.monitor-channel)"
+        # Dep: IoT, Kafka, Mongo, Db2. 
+        MAS_APP_CHANNEL_MONITOR="$(params.monitor-channel)"
+        if [[ "$MAS_APP_CHANNEL_MONITOR" != "" ]]; then
+          CMD+=" --monitor-channel $MAS_APP_CHANNEL_MONITOR"
         fi
 
-        ENABLE_MREF="$(params.enable-mref)"
-        if [[ "$ENABLE_MREF" == "true" ]]; then
-          CMD+=" --optimizer-mref $(params.mref-channel)"
+        MAS_APP_CHANNEL_OPTIMIZER="$(params.optimizer-channel)"
+        if [[ "$MAS_APP_CHANNEL_OPTIMIZER" != "" ]]; then
+          CMD+=" --optimizer-channel $MAS_APP_CHANNEL_OPTIMIZER"
+          CMD+=" --optimizer-plan $(params.optimizer-plan)"
         fi
 
-        # Optional: Manage and DB2
-        ENABLE_MANAGE="$(params.enable-manage)"
-        if [[ "$ENABLE_MANAGE" == "true" ]]; then
-          CMD+=" --manage-channel $(params.manage-channel)"          
+        # Dep: Monitor, CP4D
+        MAS_APP_CHANNEL_PREDICT="$(params.predict-channel)"
+        if [[ "$MAS_APP_CHANNEL_PREDICT" != "" ]]; then
+          CMD+=" --predict-channel $MAS_APP_CHANNEL_PREDICT"
+          CMD+=" --cp4d-version $(params.cp4d-version)"
+        fi
+
+        # Dep: Db2
+        MAS_APP_CHANNEL_MREF="$(params.mref-channel)"
+        if [[ "$MAS_APP_CHANNEL_MREF" != "" ]]; then
+          CMD+=" --facilities-channel $MAS_APP_CHANNEL_MREF --facilities-size $(params.facilities-size)"
+          CMD+=" --db2-facilities"
+        fi
+
+        # Dep: Cloud Object Storage
+        MAS_APP_CHANNEL_ASSIST="$(params.assist-channel)"
+        if [[ "$MAS_APP_CHANNEL_ASSIST" != "" ]]; then
+          CMD+=" --assist-channel $MAS_APP_CHANNEL_ASSIST --cos 'ocs'"
+        fi
+
+        # Dep: Db2
+        MAS_APP_CHANNEL_MANAGE="$(params.manage-channel)"
+        if [[ "$MAS_APP_CHANNEL_MANAGE" != "" ]]; then
+          CMD+=" --manage-channel $MAS_APP_CHANNEL_MANAGE"
+          CMD+=" --db2-manage"
           CMD+=" --manage-jdbc $(params.manage-jdbc)"
           CMD+=" --manage-components $(params.manage-components)"
-          CMD+=" --manage-server-bundle-size $(params.manage-server-bundle-size)"
-          CMD+=" --manage-persistent-volumes"
 
           ENABLE_DEMO_DATA="$(params.enable-manage-demo-data)"
           if [[ "$ENABLE_DEMO_DATA" == "true" ]]; then
             CMD+=" --manage-demodata"
           fi
 
-          ENABLE_OPTIMIZER="$(params.enable-optimizer)"
-          if [[ "$ENABLE_OPTIMIZER" == "true" ]]; then
-            CMD+=" --optimizer-channel $(params.optimizer-channel)"
-            CMD+=" --optimizer-plan $(params.optimizer-plan)"
-          fi
-
+          # Language and location Configuration
           CMD+=" --manage-base-language $(params.manage-base-language)"
           CMD+=" --manage-server-timezone $(params.manage-server-timezone)"
 
-          CMD+=" --db2-system"
-          CMD+=" --db2-manage"
-          CMD+=" --db2-channel $(params.db2-channel)"
-          CMD+=" --db2-namespace $(params.db2-namespace)"
-          CMD+=" --db2-type $(params.db2-type)"
-          CMD+=" --db2-timezone $(params.db2-timezone)"
-          CMD+=" --db2-cpu-requests $(params.db2-cpu-requests)"
-          CMD+=" --db2-cpu-limits $(params.db2-cpu-limits)"
-          CMD+=" --db2-memory-requests $(params.db2-memory-requests)"
-          CMD+=" --db2-memory-limits $(params.db2-memory-limits)"
-          CMD+=" --db2-backup-storage $(params.db2-backup-storage)"
-          CMD+=" --db2-data-storage $(params.db2-data-storage)"
-          CMD+=" --db2-logs-storage $(params.db2-logs-storage)"
-          CMD+=" --db2-meta-storage $(params.db2-meta-storage)"
-          CMD+=" --db2-temp-storage $(params.db2-temp-storage)"
+          # JMS Configuration
+          MAS_APP_SETTINGS_DEFAULT_JMS="$(params.manage-jms)"
+          if [[ "$MAS_APP_SETTINGS_DEFAULT_JMS" != "" ]]; then
+            CMD+=" --manage-jms"
+          fi
+          MAS_APP_SETTINGS_PERSISTENT_VOLUME="$(params.manage-persistent-volumes)"
+          if [[ "$MAS_APP_SETTINGS_PERSISTENT_VOLUME" != "" ]]; then
+            CMD+=" --manage-persistent-volume"
+          fi
+          MAS_APP_SETTINGS_SERVER_BUNDLES_SIZE="$(params.manage-server-bundle-size)"
+          if [[ "$MAS_APP_SETTINGS_SERVER_BUNDLES_SIZE" != "" ]]; then
+            CMD+=" --manage-server-bundle-size '$MAS_APP_SETTINGS_SERVER_BUNDLES_SIZE'"
+          fi
         fi
 
-        # Optional: Kafka
-        ENABLE_KAFKA="$(params.enable-kafka)"
-        if [[ "$ENABLE_KAFKA" == "true" ]]; then
-          CMD+=" --kafka-provider $(params.kafka-provider)"
-          CMD+=" --kafka-namespace $(params.kafka-namespace)"
-          CMD+=" --kafka-version $(params.kafka-version)"
-        fi
+        # DB2 Advanced Configuration
+        CMD+=" --db2-channel $(params.db2-channel)"
+        CMD+=" --db2-namespace $(params.db2-namespace)"
+        CMD+=" --db2-type $(params.db2-type)"
+        CMD+=" --db2-timezone $(params.db2-timezone)"
+        CMD+=" --db2-cpu-requests $(params.db2-cpu-requests)"
+        CMD+=" --db2-cpu-limits $(params.db2-cpu-limits)"
+        CMD+=" --db2-memory-requests $(params.db2-memory-requests)"
+        CMD+=" --db2-memory-limits $(params.db2-memory-limits)"
+        CMD+=" --db2-backup-storage $(params.db2-backup-storage)"
+        CMD+=" --db2-data-storage $(params.db2-data-storage)"
+        CMD+=" --db2-logs-storage $(params.db2-logs-storage)"
+        CMD+=" --db2-meta-storage $(params.db2-meta-storage)"
+        CMD+=" --db2-temp-storage $(params.db2-temp-storage)"
 
         # Final flags
         CMD+=" --accept-license"

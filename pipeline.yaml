@@ -9,6 +9,9 @@ spec:
     - name: mas-catalog-version
       type: string
       default: "v9-250731-amd64"
+    - name: mas-channel
+      type: string
+      default: "9.1.x"
     - name: mas-instance-id
       type: string
       default: "mas1"
@@ -18,9 +21,6 @@ spec:
     - name: mas-workspace-name
       type: string
       default: "workspace"
-    - name: mas-channel
-      type: string
-      default: "9.1.x"
     - name: uds-email
       type: string
       default: "john@email.com"
@@ -55,68 +55,66 @@ spec:
       default: "mongoce"
 
     # Feature flags
-    - name: enable-iot
-      type: string
-      default: "false"
     - name: iot-channel
       type: string
-      default: "9.1.x"
+      default: ""
 
-    - name: enable-monitor
-      type: string
-      default: "false"
     - name: monitor-channel
       type: string
-      default: "9.1.x"
+      default: ""
 
-    - name: enable-optimizer
-      type: string
-      default: "false"
     - name: optimizer-channel
       type: string
-      default: "9.1.x"
+      default: ""
     - name: optimizer-plan
       type: string
       default: "full"
 
-    - name: enable-predict
-      type: string
-      default: "false"
     - name: predict-channel
       type: string
-      default: "9.1.x"
-
-    - name: enable-mref
+      default: ""
+    - name: cp4d-version
       type: string
-      default: "false"
+      default: "5.1.3"
+
     - name: mref-channel
       type: string
-      default: "9.1.x"
-
-    - name: enable-manage
+      default: ""
+    - name: facilities-size
       type: string
-      default: "false"
+      default: "small"
+
+    - name: assist-channel
+      type: string
+      default: ""
+
     - name: manage-channel
       type: string
-      default: "9.1.x"
-    - name: enable-manage-demo-data
-      type: string
-      default: "false"
+      default: ""
     - name: manage-jdbc
       type: string
       default: "workspace-application"
     - name: manage-components
       type: string
       default: "base=latest,health=latest,spatial=latest,strategize=latest,serviceprovider=latest,utilities=latest,hse=latest,aip=latest"
-    - name: manage-server-bundle-size
+    - name: enable-manage-demo-data
       type: string
-      default: "jms"
+      default: "false"
     - name: manage-base-language
       type: string
       default: "EN"
     - name: manage-server-timezone
       type: string
       default: "GMT"
+    - name: manage-jms
+      type: string
+      default: ""
+    - name: manage-server-bundle-size
+      type: string
+      default: ""
+    - name: manage-persistent-volumes
+      type: string
+      default: ""
 
     # DB2
     - name: db2-channel
@@ -145,33 +143,36 @@ spec:
       default: "12Gi"
     - name: db2-backup-storage
       type: string
-      default: "100Gi"
+      default: "200Gi"
     - name: db2-data-storage
       type: string
-      default: "100Gi"
+      default: "500Gi"
     - name: db2-logs-storage
       type: string
       default: "100Gi"
     - name: db2-meta-storage
       type: string
-      default: "20Gi"
+      default: "100Gi"
     - name: db2-temp-storage
       type: string
-      default: "100Gi"
+      default: "150Gi"
 
     # Kafka
-    - name: enable-kafka
-      type: string
-      default: "true"
     - name: kafka-provider
       type: string
       default: "strimzi"
-    - name: kafka-namespace
+    - name: ibmcloud-apikey
       type: string
-      default: "strimzi"
-    - name: kafka-version
+      default: ""
+    - name: eventstreams-name
       type: string
-      default: "3.9.0"
+      default: ""
+    - name: eventstreams-resourcegroups
+      type: string
+      default: ""
+    - name: eventstreams-location
+      type: string
+      default: ""
 
   tasks:
     - name: update-image-registry
@@ -213,6 +214,8 @@ spec:
       params:
         - name: mas-catalog-version
           value: $(params.mas-catalog-version)
+        - name: mas-channel
+          value: $(params.mas-channel)
         - name: mas-instance-id
           value: $(params.mas-instance-id)
         - name: mas-workspace-id
@@ -241,46 +244,52 @@ spec:
           value: $(params.dro-namespace)
         - name: mongodb-namespace
           value: $(params.mongodb-namespace)
-        - name: mas-channel
-          value: $(params.mas-channel)
-        - name: enable-iot
-          value: $(params.enable-iot)
         - name: iot-channel
           value: $(params.iot-channel)
-        - name: enable-monitor
-          value: $(params.enable-monitor)
+        - name: kafka-provider
+          value: $(params.kafka-provider)
+        - name: ibmcloud-apikey
+          value: $(params.ibmcloud-apikey)
+        - name: eventstreams-name
+          value: $(params.eventstreams-name)
+        - name: eventstreams-resourcegroups
+          value: $(params.eventstreams-resourcegroups)
+        - name: eventstreams-location
+          value: $(params.eventstreams-location)
         - name: monitor-channel
           value: $(params.monitor-channel)
-        - name: enable-optimizer
-          value: $(params.enable-optimizer)
         - name: optimizer-channel
           value: $(params.optimizer-channel)
         - name: optimizer-plan
           value: $(params.optimizer-plan)
-        - name: enable-predict
-          value: $(params.enable-predict)
         - name: predict-channel
           value: $(params.predict-channel)
-        - name: enable-mref
-          value: $(params.enable-mref)
+        - name: cp4d-version
+          value: $(params.cp4d-version)
         - name: mref-channel
           value: $(params.mref-channel)
-        - name: enable-manage
-          value: $(params.enable-manage)
-        - name: enable-manage-demo-data
-          value: $(params.enable-manage-demo-data)
+        - name: facilities-size
+          value: $(params.facilities-size)
+        - name: assist-channel
+          value: $(params.assist-channel)
         - name: manage-channel
           value: $(params.manage-channel)
         - name: manage-jdbc
           value: $(params.manage-jdbc)
         - name: manage-components
           value: $(params.manage-components)
-        - name: manage-server-bundle-size
-          value: $(params.manage-server-bundle-size)
+        - name: enable-manage-demo-data
+          value: $(params.enable-manage-demo-data)
         - name: manage-base-language
           value: $(params.manage-base-language)
         - name: manage-server-timezone
           value: $(params.manage-server-timezone)
+        - name: manage-jms
+          value: $(params.manage-jms)
+        - name: manage-persistent-volumes
+          value: $(params.manage-persistent-volumes)
+        - name: manage-server-bundle-size
+          value: $(params.manage-server-bundle-size)
         - name: db2-channel
           value: $(params.db2-channel)
         - name: db2-namespace
@@ -307,11 +316,3 @@ spec:
           value: $(params.db2-meta-storage)
         - name: db2-temp-storage
           value: $(params.db2-temp-storage)
-        - name: enable-kafka
-          value: $(params.enable-kafka)
-        - name: kafka-provider
-          value: $(params.kafka-provider)
-        - name: kafka-namespace
-          value: $(params.kafka-namespace)
-        - name: kafka-version
-          value: $(params.kafka-version)

@@ -7,16 +7,16 @@ spec:
   pipelineRef:
     name: install-maximo-app-suite-9.1.x
   params:
-    - name: enable-manage
-      value: "true"
+    - name: manage-channel
+      value: "9.1.x"
     - name: enable-manage-demo-data
       value: "true"
-    - name: enable-optimizer
-      value: "true"
-    - name: enable-monitor
-      value: "true"
-    - name: enable-iot
-      value: "true"
+    - name: optimizer-channel
+      value: "9.1.x"
+    - name: monitor-channel
+      value: "9.1.x"
+    - name: iot-channel
+      value: "9.1.x"
     - name: manage-components
       value: "base=latest,health=latest,spatial=latest,strategize=latest,serviceprovider=latest,utilities=latest,hse=latest,aip=latest"
   workspaces:

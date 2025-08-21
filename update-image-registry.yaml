@@ -2,13 +2,14 @@ apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   name: update-image-registry
+  namespace: default
 spec:
   params:
     - name: registry-storageclass
       type: string
       default: ocs-external-storagecluster-cephfs
   steps:
-    - name: update-image-registry
+    - name: create-image-registry
       image: quay.io/openshift/origin-cli:4.16
       script: |
         #!/usr/bin/env bash
@@ -32,7 +33,9 @@ spec:
           }
         }
         EOF
-
+    - name: update-image-registry
+      image: quay.io/openshift/origin-cli:4.16
+      script: |
         oc patch configs.imageregistry.operator.openshift.io cluster \
          --type=merge \
          -p '{"spec":{"managementState":"Managed","storage":{"managementState":"Managed","pvc":{"claim":"image-registry-storage"}}}}'

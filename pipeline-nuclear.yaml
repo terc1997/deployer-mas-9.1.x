@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1
 kind: PipelineRun
 metadata:
-  name: mas-ind1-install-9.1.x
+  name: mas-ind22-install-9.1.x
   namespace: default
 spec:
   pipelineRef:
@@ -17,16 +17,16 @@ spec:
       value: "9.1.x"
     - name: enable-manage-demo-data
       value: "true"
+    - name: optimizer-channel
+      value: "9.1.x"
     - name: monitor-channel
       value: "9.1.x"
     - name: iot-channel
       value: "9.1.x"
     - name: predict-channel
       value: "9.1.x"
-    - name: optimizer-channel
-      value: "9.1.x"
     - name: manage-components
-      value: "base=latest,health=latest,spatial=latest,strategize=latest,serviceprovider=latest,utilities=latest,hse=latest,aip=latest"
+      value: "base=latest,health=latest,spatial=latest,strategize=latest,nuclear=latest"
   workspaces:
     - name: ws
       volumeClaimTemplate:

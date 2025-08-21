@@ -2,6 +2,7 @@ apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   name: install-mas
+  namespace: default
 spec:
   workspaces:
     - name: ws
@@ -100,7 +101,7 @@ spec:
       type: string
       default: "5.1.3"
 
-    - name: mref-channel
+    - name: facilities-channel
       type: string
       default: ""
     - name: facilities-size
@@ -139,12 +140,16 @@ spec:
       type: string
       default: ""
 
+    - name: visualinspection-channel
+      type: string
+      default: ""
+
     - name: db2-channel
       type: string
-      default: "v110509.0"
+      default: ""
     - name: db2-namespace
       type: string
-      default: "db2u"
+      default: ""
     - name: db2-type
       type: string
       default: "db2wh"
@@ -178,9 +183,14 @@ spec:
     - name: db2-temp-storage
       type: string
       default: "150Gi"
+    
+    - name: use-letsencrypt-certs
+      type: string
+      default: "true"
+
   steps:
     - name: install
-      image: quay.io/ibmmas/cli:15.1.6-pre.issue-1155
+      image: quay.io/ibmmas/cli:latest
       script: |
         #!/bin/bash
 
@@ -241,7 +251,7 @@ spec:
         fi
 
         # Dep: Db2
-        MAS_APP_CHANNEL_MREF="$(params.mref-channel)"
+        MAS_APP_CHANNEL_MREF="$(params.facilities-channel)"
         if [[ "$MAS_APP_CHANNEL_MREF" != "" ]]; then
           CMD+=" --facilities-channel $MAS_APP_CHANNEL_MREF --facilities-size $(params.facilities-size)"
           CMD+=" --db2-facilities"
@@ -251,6 +261,11 @@ spec:
         MAS_APP_CHANNEL_ASSIST="$(params.assist-channel)"
         if [[ "$MAS_APP_CHANNEL_ASSIST" != "" ]]; then
           CMD+=" --assist-channel $MAS_APP_CHANNEL_ASSIST --cos 'ocs'"
+        fi
+
+        MAS_APP_CHANNEL_VI="$(params.visualinspection-channel)"
+        if [[ "$MAS_APP_CHANNEL_VI" != "" ]]; then
+          CMD+=" --visualinspection-channel $MAS_APP_CHANNEL_VI"
         fi
 
         # Dep: Db2
@@ -286,8 +301,14 @@ spec:
         fi
 
         # DB2 Advanced Configuration
-        CMD+=" --db2-channel $(params.db2-channel)"
-        CMD+=" --db2-namespace $(params.db2-namespace)"
+        DB2_CHANNEL=$(params.db2-channel)
+        if [[ "$DB2_CHANNEL" != "" ]]; then
+          CMD+=" --db2-channel $DB2_CHANNEL"
+        fi
+        DB2_NAMESPACE=$(params.db2-namespace)
+        if [[ "$DB2_NAMESPACE" != "" ]]; then
+          CMD+=" --db2-namespace $DB2_NAMESPACE"
+        fi
         CMD+=" --db2-type $(params.db2-type)"
         CMD+=" --db2-timezone $(params.db2-timezone)"
         CMD+=" --db2-cpu-requests $(params.db2-cpu-requests)"
@@ -299,6 +320,12 @@ spec:
         CMD+=" --db2-logs-storage $(params.db2-logs-storage)"
         CMD+=" --db2-meta-storage $(params.db2-meta-storage)"
         CMD+=" --db2-temp-storage $(params.db2-temp-storage)"
+
+        # Manual Certs
+        USE_MANUAL_CERTS=$(params.use-letsencrypt-certs)
+        if [[ "$USE_MANUAL_CERTS" == "true" ]]; then
+          CMD+=" --manual-certificates $(workspaces.ws.path)/masconfig/certs"
+        fi
 
         # Final flags
         CMD+=" --accept-license"

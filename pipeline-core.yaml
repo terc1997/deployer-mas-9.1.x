@@ -1,0 +1,32 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  name: mas-core-install-9.1.x
+  namespace: default
+spec:
+  pipelineRef:
+    name: install-maximo-app-suite-9.1.x
+  params:
+    - name: storage-rwo
+      value: "ocs-storagecluster-ceph-rbd"
+    - name: storage-rwx
+      value: "ocs-storagecluster-cephfs"
+    - name: storage-pipeline
+      value: "ocs-storagecluster-cephfs"
+    - name: mas-instance-id
+      value: inst1
+    - name: mas-workspace-id
+      value: test
+    - name: mas-workspace-name
+      value: test
+  workspaces:
+    - name: ws
+      volumeClaimTemplate:
+        metadata:
+          name: mas-pvc
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi

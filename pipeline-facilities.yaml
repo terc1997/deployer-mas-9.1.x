@@ -17,6 +17,8 @@ spec:
       value: "9.1.x-dev"
     - name: manage-components
       value: ""
+    - name: monitor-channel
+      value: "9.1.x-dev"
     - name: facilities-channel
       value: "9.1.x-dev"
     - name: facilities-size

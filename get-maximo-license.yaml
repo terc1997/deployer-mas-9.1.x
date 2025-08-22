@@ -2,7 +2,6 @@ apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   name: get-maximo-license
-  namespace: default
 spec:
   workspaces:
     - name: ws

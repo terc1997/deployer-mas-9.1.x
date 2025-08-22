@@ -2,7 +2,6 @@ apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   name: update-image-registry
-  namespace: default
 spec:
   params:
     - name: registry-storageclass
